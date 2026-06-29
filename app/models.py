@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, ForeignKey, Table, Column
 from datetime import datetime, date
 
-import database as db
+from . import database as db
 
 
 pokemon_to_type_association = Table(
