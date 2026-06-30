@@ -11,3 +11,12 @@ dependencies = [
     "sqlalchemy>=2.0.49",
     "uvicorn>=0.46.0",
 ]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]                # Look in the current directory (supereffective/)
+include = ["app*", "ml*", "data*"]  # Explicitly include these top-level packages
+exclude = ["tests*", "scripts*", "docs*", "templates*", "static*"]  # Skip non-package folders
