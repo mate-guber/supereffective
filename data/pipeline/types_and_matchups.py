@@ -1,16 +1,8 @@
 import httpx
 from sqlalchemy.orm import Session
 from app.models import Type, TypeMatchup
+from data.pipeline.fetch_json import fetch_json
 
-def fetch_json(client: httpx.Client, url: str, params: dict | None = None) -> dict:
-    """Fetch a URL and return its parsed JSON body.
-
-    Raises:
-        httpx.HTTPStatusError: If the server returns a 4xx or 5xx response.
-    """
-    response = client.get(url, params=params)
-    response.raise_for_status()
-    return response.json()
 
 def iter_damage_pairs(response_cache, relation_multipliers):
     """Yield (attacker_name, defender_name, multiplier) for every type matchup."""
@@ -34,7 +26,7 @@ def ingest_types(session: Session) -> None:
         httpx.HTTPStatusError: If any PokeAPI request returns a 4xx or 5xx response.
     """
 
-    response_cache:dict[str, dict] = {}
+    response_cache: dict[str, dict] = {}
     types: dict[str, Type] = {}
     matchups: list[TypeMatchup] = []
 
