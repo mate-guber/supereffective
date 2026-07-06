@@ -1,6 +1,7 @@
 import httpx
 import datetime
 from sqlalchemy.orm import Session
+from sqlalchemy import delete
 from app.models import Pokemon, MetaUsageData
 from data.pipeline.fetch_json import fetch_json
 
@@ -22,21 +23,24 @@ def normalize(name: str) -> str:
     return NAME_OVERRIDES.get(key,key)
 
 def fetch_usage_data(date: datetime.date, format_name: str) -> dict[str, float]:
-    """Fetches usage data from Smogon stats for a specific date 
-    and format. Converts the Smogon stats Pokemon naming convention
-    to PokeAPI slug format.
+    """Fetch Pokemon usage percentages from Smogon stats 
+    for a given month and format.
+
+    Only the year and month of date are used to construct the request URL.
+    Pokemon names are normalized from Smogon's naming convention to 
+    PokéAPI slug format.
 
     Args:
-        date: A date object describing which year-month the data will be
-            pullef from. The day attribute does not matter.
-        format_name: Smogon stats' internal name representing different 
-            competitive formats or regulations.
-            eg.: gen9championsvgc2026regmb with -0/-1500/-1630/-1760 
-            attached to the end representing elo cutoff.
-    
+        date: Determines the year and month of the stats to fetch.
+        format_name: Smogon's internal format identifier, including the
+            rating cutoff suffix (e.g. 'gen9championsvgc2026regmb-1500').
+
     Returns:
-        A dict of pokemon names and their usage frequency. 
-        Names are normalized to match PokeAPI slug format.
+        A dict mapping normalized Pokemon names to their usage percentage
+        as a float between 0 and 1.
+
+    Raises:
+        httpx.HTTPStatusError: If the Smogon stats request fails.
     """
 
     with httpx.Client() as client:
@@ -53,5 +57,27 @@ def fetch_usage_data(date: datetime.date, format_name: str) -> dict[str, float]:
 def ingest_usage_data(session: Session, 
                       pokemons: dict[str, Pokemon], 
                       usage_data: dict[str, float]) -> None:
+    """Rebuild MetaUsageData rows from the current usage statistics.
+
+    All existing MetaUsageData rows are deleted before inserting fresh ones,
+    ensuring stale data from previous ingestion runs never persists.
+    New rows are staged on the session but not committed.
+
+    Args:
+        session: Active SQLAlchemy session used for deletion and staging.
+        pokemons: Mapping of normalized Pokemon names to their corresponding
+            Pokemon objects, as returned by ingest_pokemon.
+        usage_data: Mapping of normalized Pokemon names to their usage
+            percentage, as returned by fetch_usage_data. Keys must match
+            those in pokemons.
+    """
+
+    session.execute(delete(MetaUsageData))
+    stats: list[MetaUsageData] = []
+
+    for name, usage in usage_data.items():
+        data = MetaUsageData(pokemon=pokemons[name], 
+                             usage_percentage=usage)
+        stats.append(data)
     
-    pass
+    session.add_all(stats)
