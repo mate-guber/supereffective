@@ -1,8 +1,8 @@
-"""initial schema
+"""initial_schema
 
-Revision ID: 903cf118e7f1
+Revision ID: aa915ac730e5
 Revises: 
-Create Date: 2026-06-29 13:54:31.609990
+Create Date: 2026-07-06 10:45:26.379888
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '903cf118e7f1'
+revision: str = 'aa915ac730e5'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,61 +26,60 @@ def upgrade() -> None:
     sa.Column('category', sa.String(), nullable=False),
     sa.Column('description', sa.String(), nullable=False),
     sa.Column('difficulty', sa.Integer(), nullable=False),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_concept'))
     )
     op.create_table('pokemon_species',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=40), nullable=False),
     sa.Column('speed', sa.Integer(), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('name')
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_pokemon_species')),
+    sa.UniqueConstraint('name', name=op.f('uq_pokemon_species_name'))
     )
     op.create_table('pokemon_type',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=20), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('name')
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_pokemon_type')),
+    sa.UniqueConstraint('name', name=op.f('uq_pokemon_type_name'))
     )
     op.create_table('user_data',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('email', sa.String(), nullable=False),
     sa.Column('username', sa.String(), nullable=False),
     sa.Column('password', sa.String(), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('email'),
-    sa.UniqueConstraint('username')
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_user_data')),
+    sa.UniqueConstraint('email', name=op.f('uq_user_data_email')),
+    sa.UniqueConstraint('username', name=op.f('uq_user_data_username'))
     )
     op.create_table('meta_usage_data',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('pokemon_id', sa.Integer(), nullable=False),
     sa.Column('usage_percentage', sa.Float(), nullable=False),
-    sa.Column('from_month', sa.Date(), nullable=False),
-    sa.Column('format_name', sa.String(), nullable=False),
-    sa.ForeignKeyConstraint(['pokemon_id'], ['pokemon_species.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['pokemon_id'], ['pokemon_species.id'], name=op.f('fk_meta_usage_data_pokemon_id_pokemon_species')),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_meta_usage_data')),
+    sa.UniqueConstraint('pokemon_id', name=op.f('uq_meta_usage_data_pokemon_id'))
     )
     op.create_table('pokemon_to_type_association',
     sa.Column('species_id', sa.Integer(), nullable=False),
     sa.Column('pokemon_type_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['pokemon_type_id'], ['pokemon_type.id'], ),
-    sa.ForeignKeyConstraint(['species_id'], ['pokemon_species.id'], ),
-    sa.PrimaryKeyConstraint('species_id', 'pokemon_type_id')
+    sa.ForeignKeyConstraint(['pokemon_type_id'], ['pokemon_type.id'], name=op.f('fk_pokemon_to_type_association_pokemon_type_id_pokemon_type')),
+    sa.ForeignKeyConstraint(['species_id'], ['pokemon_species.id'], name=op.f('fk_pokemon_to_type_association_species_id_pokemon_species')),
+    sa.PrimaryKeyConstraint('species_id', 'pokemon_type_id', name=op.f('pk_pokemon_to_type_association'))
     )
     op.create_table('question',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('text', sa.String(), nullable=False),
     sa.Column('answer', sa.String(), nullable=False),
     sa.Column('concept_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['concept_id'], ['concept.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['concept_id'], ['concept.id'], name=op.f('fk_question_concept_id_concept')),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_question'))
     )
     op.create_table('type_matchup',
     sa.Column('attacker', sa.Integer(), nullable=False),
     sa.Column('defender', sa.Integer(), nullable=False),
     sa.Column('multiplier', sa.Float(), nullable=False),
-    sa.ForeignKeyConstraint(['attacker'], ['pokemon_type.id'], ),
-    sa.ForeignKeyConstraint(['defender'], ['pokemon_type.id'], ),
-    sa.PrimaryKeyConstraint('attacker', 'defender')
+    sa.ForeignKeyConstraint(['attacker'], ['pokemon_type.id'], name=op.f('fk_type_matchup_attacker_pokemon_type')),
+    sa.ForeignKeyConstraint(['defender'], ['pokemon_type.id'], name=op.f('fk_type_matchup_defender_pokemon_type')),
+    sa.PrimaryKeyConstraint('attacker', 'defender', name=op.f('pk_type_matchup'))
     )
     op.create_table('answer_record',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -88,9 +87,9 @@ def upgrade() -> None:
     sa.Column('question_id', sa.Integer(), nullable=False),
     sa.Column('correct', sa.Boolean(), nullable=False),
     sa.Column('timestamp', sa.DateTime(), nullable=False),
-    sa.ForeignKeyConstraint(['question_id'], ['question.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user_data.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['question_id'], ['question.id'], name=op.f('fk_answer_record_question_id_question')),
+    sa.ForeignKeyConstraint(['user_id'], ['user_data.id'], name=op.f('fk_answer_record_user_id_user_data')),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_answer_record'))
     )
     # ### end Alembic commands ###
 

@@ -41,10 +41,9 @@ class MetaUsageData(db.Base):
     __tablename__ = "meta_usage_data"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    pokemon_id: Mapped[int] = mapped_column(ForeignKey("pokemon_species.id"))
+    pokemon_id: Mapped[int] = mapped_column(ForeignKey("pokemon_species.id"), unique=True)
+    pokemon: Mapped["Pokemon"] = relationship()
     usage_percentage: Mapped[float] 
-    from_month: Mapped[date]
-    format_name: Mapped[str]
 
 class Concept(db.Base):
     __tablename__ = "concept"
