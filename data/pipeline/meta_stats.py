@@ -14,12 +14,21 @@ NAME_OVERRIDES = {
     "meowstic-m-mega": "meowstic-male-mega",
     "meowstic-f-mega": "meowstic-female-mega",
     "indeedee": "indeedee-male",
-    "indeedee-f": "indeedee-female"
+    "indeedee-f": "indeedee-female",
+    "aegislash": "aegislash-shield",
+    "maushold": "maushold-family-of-four",
+    "palafin": "palafin-zero",
+    "mimikyu": "mimikyu-disguised",
+    "tauros-paldea-aqua": "tauros-paldea-aqua-breed",
+    "tauros-paldea-blaze": "tauros-paldea-blaze-breed",
+    "tauros-paldea-combat": "tauros-paldea-combat-breed",
+    "lycanroc": "lycanroc-midday",
+    "morpeko": "morpeko-full-belly",
 }
 
 # Introduce a single naming convention (PokeAPI) early to avoid confusion
 def normalize(name: str) -> str:
-    key = name.lower().replace(" ", "-").replace("'","")
+    key = name.lower().replace(" ", "-").replace("'","").replace(".","")
     return NAME_OVERRIDES.get(key,key)
 
 def fetch_usage_data(date: datetime.date, format_name: str) -> dict[str, float]:
@@ -46,7 +55,7 @@ def fetch_usage_data(date: datetime.date, format_name: str) -> dict[str, float]:
     with httpx.Client() as client:
         stats = fetch_json(
             client, 
-            f"https://www.smogon.com/stats/{date.year}-{date.month}/chaos/{format_name}.json"
+            f"https://www.smogon.com/stats/{date.year}-{date.month:02d}/chaos/{format_name}.json"
             )
     
     usage_data: dict[str, float] = {
