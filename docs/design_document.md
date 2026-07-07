@@ -43,7 +43,7 @@ incoming <- double, half, no damage
 
 **Pokemon** - stores a single pokemon species. Needs a name, a speed stat, and a list of types. (Up to 2 types) 
 
-**Meta data** - stores information about usage statistics. Needs a pokemon name, usage percentage, month, and format.
+**Meta data** - stores information about usage statistics. Needs a reference to a pokemon and usage percentage. 
 
 **Content data** - stores concepts and questions: 
 * **Concept** - the unit of knowledge being tracked. Has a category, a description, and a difficulty level perhaps.
@@ -66,7 +66,7 @@ A significant weakness of this approach is its susceptibility to the cold start 
 
 ## Build phases
 **Phase 1 - Data Groundwork** 
-Pull relevant data from PokeAPI and Smogon, then store those in a database. Since the first feature is going to be the type-matchup drills, I will need this data as a base to get started on that. I will probably need the last month's Smogon usage stats as well, so that the question engine can have a baseline for how to select for now.
+Pull relevant data from PokeAPI and Smogon, then store those in a database. Since the first feature is going to be the type-matchup drills, I will need this data as a base to get started on that. I will need the last month's Smogon usage stats as well, so that the question engine can have a baseline for how to select for now.
 
 **Phase 2 - Question Engine** 
 Build the type matchup question generator. It should select questions based on the meta-weighting. 
