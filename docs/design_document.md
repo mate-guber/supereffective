@@ -23,11 +23,11 @@ Stretch goals for future versions:
 The architecture has five clear components:
 - Data pipeline
 - Database
-- Question generation engine
+- Question generation/selection engine
 - DKT model (Deep Knowledge Tracing)
 - Web application — FastAPI backend with Jinja2 frontend
 
-First data is pulled from pokeAPI and showdown stats about type matchups and the current meta pokemon and their speeds/type combinations. This information is stored in a database alongside user data. A python question generation engine takes the raw data from the database and programmatically constructs questions from it. A simple frontend displays the questions and records the user's answers. These answers then get sent back to be stored in the database, and are used as input for a DKT model. This model learns about the user and decides what questions to surface next.
+First data is pulled from pokeAPI and showdown stats about type matchups and the current meta pokemon and their speeds/type combinations. This information is stored in a database alongside user data. A python question generation/selection engine pre-seeds the database with questions covering all possible type matchup combinations and uses meta-weighting to surface appropriate questions at runtime. A simple frontend displays the questions and records the user's answers. These answers then get sent back to be stored in the database, and are used as input for a DKT model. This model learns about the user and decides what questions to surface next.
 
 ## Data sources and data model
 Sources:
@@ -46,8 +46,8 @@ incoming <- double, half, no damage
 **Meta data** - stores information about usage statistics. Needs a reference to a pokemon and usage percentage. 
 
 **Content data** - stores concepts and questions: 
-* **Concept** - the unit of knowledge being tracked. Has a category, a description, and a difficulty level perhaps.
-* **Question** - a surface presentation of a concept. Has a text field, an answer, and a foreign key linking it to exactly one concept.
+* **Concept** - the unit of knowledge being tracked. Has a category and a description.
+* **Question** - a surface presentation of a concept. Has an attacker type, defender type, an answer, and a foreign key linking it to exactly one concept. All possible type matchup questions are pre-seeded.
 
 **User data** - stores information about the user's account and associated answer history. 
 - **User** - has a unique identifier and account credentials.
@@ -92,11 +92,13 @@ I chose Pokemon VGC as the domain for this project because there is a large amou
 
 I decided to write the project in Python because there is a mature ecosystem of frameworks and libraries that support both the machine learning and web app components of the project, and because I have substantial prior experience with the language. 
 
-I considered Django and Flask as backend frameworks but ultimately chose FastAPI for the project. It is a fast and modern framework that is commonly used in ML serving contexts, which makes it a great fit. 
+I considered Django and Flask as web frameworks but ultimately chose FastAPI for the project. It is a fast and modern framework that is commonly used in ML serving contexts, which makes it a great fit. 
 
 For the frontend I considered React but decided to go with Jinja2 because the added complexity wasn't justified for the goals of this project. Building a frontend agnostic core allows me to replace the UI in the future without much effort. 
 
 I decided to use DKT over a simpler approach, like a weighted counter, because it captures the relationships between underlying concepts, which fits the educational nature of the project much better. This approach has a cold start problem however, which I mitigate by having new users fill out an onboarding quiz that gives the model a more informed starting point as well as adopting a meta-weighted question selection approach until sufficient real user data accumulates.
+
+I chose to represent each type pairing (attacker vs defender) as a concept instead of one concept per attacking type. This concept granularity means the DKT model accumulates signal more slowly per concept given the larger pool, however type matchup knowledge does not transfer across pairs involving the same type, knowing Fire beats Grass gives no indication of what else Fire beats, so this mapping aligns more faithfully with the domain.
 
 The target of this project are beginners and low-intermediate players because the knowledge being drilled is foundational to the domain, thus it's most impactful at the beginner level. For newer players the lack of memorisation of static information poses a significant bottleneck, one that more experienced players have already cleared through their experiences with the game.
 
