@@ -51,15 +51,17 @@ class Concept(db.Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     category: Mapped[str]
     description: Mapped[str]
-    difficulty: Mapped[int]
 
 class Question(db.Base):
     __tablename__ = "question"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    text: Mapped[str]
-    answer: Mapped[str]
     concept_id: Mapped[int] = mapped_column(ForeignKey("concept.id"))
+    attacker_id: Mapped[int] = mapped_column(ForeignKey("pokemon_type.id"))
+    defender_id: Mapped[int] = mapped_column(ForeignKey("pokemon_type.id"))
+    answer: Mapped[float]
+    attacker: Mapped[Type] = relationship(foreign_keys=[attacker_id])
+    defender: Mapped[Type] = relationship(foreign_keys=[defender_id])
 
 class UserData(db.Base):
     __tablename__ = "user_data"
