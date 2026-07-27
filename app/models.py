@@ -26,15 +26,15 @@ class Pokemon(db.Base):
     name: Mapped[str] = mapped_column(String(40), unique=True)
     speed: Mapped[int] 
 
-    species_type: Mapped[List["Type"]] = relationship(secondary=pokemon_to_type_association)
+    species_type: Mapped[List[Type]] = relationship(secondary=pokemon_to_type_association)
 
 class TypeMatchup(db.Base):
     __tablename__ = "type_matchup"
 
-    attacker: Mapped[int] = mapped_column(ForeignKey("pokemon_type.id"), primary_key=True)
-    defender: Mapped[int] = mapped_column(ForeignKey("pokemon_type.id"), primary_key=True)
-    attacker_type: Mapped["Type"] = relationship(foreign_keys=[attacker])
-    defender_type: Mapped["Type"] = relationship(foreign_keys=[defender])
+    attacker_id: Mapped[int] = mapped_column(ForeignKey("pokemon_type.id"), primary_key=True)
+    defender_id: Mapped[int] = mapped_column(ForeignKey("pokemon_type.id"), primary_key=True)
+    attacker_type: Mapped[Type] = relationship(foreign_keys=[attacker_id])
+    defender_type: Mapped[Type] = relationship(foreign_keys=[defender_id])
     multiplier: Mapped[float]
 
 class MetaUsageData(db.Base):
@@ -42,7 +42,7 @@ class MetaUsageData(db.Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     pokemon_id: Mapped[int] = mapped_column(ForeignKey("pokemon_species.id"), unique=True)
-    pokemon: Mapped["Pokemon"] = relationship()
+    pokemon: Mapped[Pokemon] = relationship()
     usage_percentage: Mapped[float] 
 
 class Concept(db.Base):
@@ -60,8 +60,9 @@ class Question(db.Base):
     attacker_id: Mapped[int] = mapped_column(ForeignKey("pokemon_type.id"))
     defender_id: Mapped[int] = mapped_column(ForeignKey("pokemon_type.id"))
     answer: Mapped[float]
-    attacker: Mapped[Type] = relationship(foreign_keys=[attacker_id])
-    defender: Mapped[Type] = relationship(foreign_keys=[defender_id])
+    concept: Mapped[Concept] = relationship()
+    attacker_type: Mapped[Type] = relationship(foreign_keys=[attacker_id])
+    defender_type: Mapped[Type] = relationship(foreign_keys=[defender_id])
 
 class UserData(db.Base):
     __tablename__ = "user_data"
@@ -79,3 +80,5 @@ class AnswerRecord(db.Base):
     question_id: Mapped[int] = mapped_column(ForeignKey("question.id"))
     correct: Mapped[bool]
     timestamp: Mapped[datetime]
+    user: Mapped[UserData] = relationship(foreign_keys=[user_id])
+    question: Mapped[Question] = relationship(foreign_keys=[question_id])
