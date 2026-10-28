@@ -18,3 +18,4 @@ wheels/
 
 # Database 
 supereffective.db
+scripts/test_meta.py
