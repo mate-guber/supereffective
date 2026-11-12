@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import select
 from engine.weights import MetaEntry
-from engine.errors import MetaDataError
-from app.models import MetaUsageData, Pokemon
+from engine.errors import MetaDataError, TypeDataError
+from app.models import MetaUsageData, Pokemon, Type
 
 def get_meta_entries(session: Session) -> list[MetaEntry]:
     """Retrieve meta usage information from the db and match it with the
@@ -41,3 +41,22 @@ def get_meta_entries(session: Session) -> list[MetaEntry]:
         raise MetaDataError("No meta usage data was found in the database")
 
     return meta_entries
+
+def get_every_type_name(session: Session) -> list[str]:
+    """Retrieve every Pokemon type stored in the db.
+
+    Args:
+        session: Active SQLAlchemy session used for db access.
+
+    Returns:
+        A list containing the name of every Pokemon type.
+
+    Raises:
+        TypeDataError: If db lookup results in an empty list.
+    """
+    types = list(session.scalars(select(Type.name)))
+
+    if not types:
+        raise TypeDataError("No type names were found in the database")
+
+    return types

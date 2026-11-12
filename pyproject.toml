@@ -20,3 +20,8 @@ build-backend = "setuptools.build_meta"
 where = ["."]                # Look in the current directory (supereffective/)
 include = ["app*", "ml*", "data*"]  # Explicitly include these top-level packages
 exclude = ["tests*", "scripts*", "docs*", "templates*", "static*"]  # Skip non-package folders
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]
